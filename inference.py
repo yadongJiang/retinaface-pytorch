@@ -201,6 +201,6 @@ def faceDetectAPI(img):
     face_detect.imshow(boxes, scores, landmarks)  ## just for imshow
 
 if __name__ == '__main__':
-    img_path = '/media/administrator/00006784000048231/new_Projects/人脸系列/Pytorch_Retinaface/data/FDDB/images/2002/07/19/big/img_854.jpg'
+    img_path = './data/test_images/img_18.jpg'
     img = cv2.imread(img_path)
     faceDetectAPI(img)
