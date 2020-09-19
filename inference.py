@@ -24,8 +24,13 @@ class Inference(object):
         self.confidence_threshold = 0.02
         self.nms_threshold = 0.4
         self.vis_thres = 0.5
+        self.input_height = 720
+        self.input_width = 1280
 
         self._initialize_weight()
+
+        self.scale = torch.Tensor([1280, 720, 1280, 720]).to(self.device)
+        self.prior_data = self._initialize_priorbox(self.cfg, self.input_height, self.input_width)
     
     def _initialize_weight(self):
         self.cfg = None
@@ -95,28 +100,31 @@ class Inference(object):
         if self.resize != 1:
             img = cv2.resize(img, None, None, fx=self.resize, fy=self.resize, interpolation=cv2.INTER_LINEAR)
         
-        im_height, im_width, _ = img.shape
-        scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
+        # im_height, im_width, _ = img.shape
+        # scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
         img -= (104, 117, 123)
         img = img.transpose(2, 0, 1)
         img = torch.from_numpy(img).unsqueeze(0)
         img = img.to(self.device)
-        scale = scale.to(self.device)
+        # scale = scale.to(self.device)
+
 
         loc, conf, landms = self.net(img)  # forward pass
 
-        prior_data = self._initialize_priorbox(self.cfg, im_height, im_width)
+        # start = time.time()
+        # prior_data = self._initialize_priorbox(self.cfg, im_height, im_width)
+        # print("cost time : ", time.time() - start)
 
         # decode boxes
-        boxes = decode(loc.data.squeeze(0), prior_data, self.cfg['variance'])
-        boxes = boxes * scale / self.resize
+        boxes = decode(loc.data.squeeze(0), self.prior_data, self.cfg['variance'])
+        boxes = boxes * self.scale / self.resize
         boxes = boxes.cpu().numpy()
 
         # scores
         scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
 
         # landmarks
-        landms = decode_landm(landms.data.squeeze(0), prior_data, self.cfg['variance'])
+        landms = decode_landm(landms.data.squeeze(0), self.prior_data, self.cfg['variance'])
         scale1 = torch.Tensor([img.shape[3], img.shape[2], img.shape[3], img.shape[2],
                                img.shape[3], img.shape[2], img.shape[3], img.shape[2],
                                img.shape[3], img.shape[2]])
