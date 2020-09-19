@@ -100,20 +100,12 @@ class Inference(object):
         if self.resize != 1:
             img = cv2.resize(img, None, None, fx=self.resize, fy=self.resize, interpolation=cv2.INTER_LINEAR)
         
-        # im_height, im_width, _ = img.shape
-        # scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
         img -= (104, 117, 123)
         img = img.transpose(2, 0, 1)
         img = torch.from_numpy(img).unsqueeze(0)
         img = img.to(self.device)
-        # scale = scale.to(self.device)
-
 
         loc, conf, landms = self.net(img)  # forward pass
-
-        # start = time.time()
-        # prior_data = self._initialize_priorbox(self.cfg, im_height, im_width)
-        # print("cost time : ", time.time() - start)
 
         # decode boxes
         boxes = decode(loc.data.squeeze(0), self.prior_data, self.cfg['variance'])
