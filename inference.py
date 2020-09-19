@@ -41,6 +41,7 @@ class Inference(object):
         print(self.net)
         cudnn.benchmark = True
         self.device = torch.device("cpu" if self.use_cpu else "cuda")
+        print("self. device : ", self.device)
         self.net = self.net.to(self.device)
     
     def _initialize_priorbox(self, cfg, im_height, im_width):
@@ -170,7 +171,7 @@ class faceDetect(object):
         boxes, scores, landmarks = self.infer(img)
         return boxes, scores, landmarks
 
-    def imshow(self, boxes, scores, landmarks):
+    def imshow(self, img, boxes, scores, landmarks):
         for i in range(len(boxes)):
             box = boxes[i]
             score = scores[i]
@@ -194,13 +195,23 @@ class faceDetect(object):
         cv2.imshow("img", img)
         cv2.waitKey()
 
+face_detect = faceDetect('./weights/mobilenet0.25_Final.pth', 'mobile0.25')
 # 人脸、人脸关键点检测入口函数
 def faceDetectAPI(img):
-    face_detect = faceDetect('./weights/mobilenet0.25_Final.pth', 'mobile0.25')
+    new_width = 1280
+    new_height = 720
+    img = cv2.resize(img, (new_width, new_height))
+
     boxes, scores, landmarks = face_detect.detect(img)  ## for return
-    face_detect.imshow(boxes, scores, landmarks)  ## just for imshow
+    face_detect.imshow(img, boxes, scores, landmarks)  ## just for imshow
 
 if __name__ == '__main__':
-    img_path = './data/test_images/img_18.jpg'
-    img = cv2.imread(img_path)
-    faceDetectAPI(img)
+    import os
+    import time
+    root = '/media/administrator/00006784000048233/300W/afw'
+    for im in os.listdir(root):
+        img_path = os.path.join(root, im)
+        img = cv2.imread(img_path)
+        start = time.time()
+        faceDetectAPI(img)
+        print("cost time : ", time.time() - start)
