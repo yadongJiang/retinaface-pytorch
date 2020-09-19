@@ -38,7 +38,7 @@ We also provide a set of Face Detector for edge device in [here](https://github.
 
 ## Installation
 ##### Clone and install
-1. git clone https://github.com/biubug6/Pytorch_Retinaface.git
+1. git clone https://github.com/2275519762/RetinaFace_Pytorch.git
 
 2. Pytorch version 1.1.0+ and torchvision 0.3.0+ are needed.
 
